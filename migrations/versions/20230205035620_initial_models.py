@@ -20,7 +20,7 @@ def upgrade():
     op.create_table(
         "users",
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
-        sa.Column("uuid", sa.UUID(), nullable=False),
+        sa.Column("uuid", sa.String(length=255), nullable=False),
         sa.Column("email", sa.Unicode(length=255), nullable=False),
         sa.Column("password", sa.Unicode(length=255), nullable=False),
         sa.Column("username", sa.Unicode(length=255), nullable=False),
@@ -35,7 +35,7 @@ def upgrade():
     op.create_table(
         "tasks",
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
-        sa.Column("uuid", sa.UUID(), nullable=False),
+        sa.Column("uuid", sa.String(length=255), nullable=False),
         sa.Column("title", sa.String(length=255), nullable=False),
         sa.Column("description", sa.String(length=255), nullable=False),
         sa.Column("is_completed", sa.Boolean(), nullable=False),

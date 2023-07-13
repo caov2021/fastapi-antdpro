@@ -3,7 +3,9 @@ from typing import List
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from api import router
 from core.cache import Cache, CustomKeyMaker, RedisBackend
@@ -73,8 +75,10 @@ def create_app() -> FastAPI:
         title="FastAPI Boilerplate",
         description="FastAPI Boilerplate by @iam-abbas",
         version="1.0.0",
-        docs_url=None if config.ENVIRONMENT == "production" else "/docs",
-        redoc_url=None if config.ENVIRONMENT == "production" else "/redoc",
+        # docs_url=None if config.ENVIRONMENT == "production" else "/docs",
+        # redoc_url=None if config.ENVIRONMENT == "production" else "/redoc",
+        docs_url=None,
+        redoc_url=None,
         dependencies=[Depends(Logging)],
         middleware=make_middleware(),
     )
@@ -85,3 +89,31 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Local server openapi docs on development environment
+if config.ENVIRONMENT != "production":
+    @app.get("/docs", include_in_schema=False)
+    async def custom_swagger_ui_html():
+        return get_swagger_ui_html(
+            openapi_url=app.openapi_url,
+            title=app.title + " - Swagger UI",
+            oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+            swagger_js_url="/static/swagger-ui-bundle.js",
+            swagger_css_url="/static/swagger-ui.css",
+        )
+
+
+    @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
+    async def swagger_ui_redirect():
+        return get_swagger_ui_oauth2_redirect_html()
+
+
+    @app.get("/redoc", include_in_schema=False)
+    async def redoc_html():
+        return get_redoc_html(
+            openapi_url=app.openapi_url,
+            title=app.title + " - ReDoc",
+            redoc_js_url="/static/redoc.standalone.js",
+        )

@@ -27,8 +27,8 @@ def reset_session_context(context: Token) -> None:
 
 
 engines = {
-    "writer": create_async_engine(config.POSTGRES_URL, pool_recycle=3600),
-    "reader": create_async_engine(config.POSTGRES_URL, pool_recycle=3600),
+    "writer": create_async_engine(str(config.MYSQL_URL), pool_recycle=3600, pool_pre_ping=True),
+    "reader": create_async_engine(str(config.MYSQL_URL), pool_recycle=3600, pool_pre_ping=True),
 }
 
 

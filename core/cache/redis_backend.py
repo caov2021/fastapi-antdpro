@@ -7,7 +7,7 @@ import ujson
 from core.cache.base import BaseBackend
 from core.config import config
 
-redis = aioredis.from_url(url=config.REDIS_URL)
+redis = aioredis.from_url(url=str(config.REDIS_URL))
 
 
 class RedisBackend(BaseBackend):
