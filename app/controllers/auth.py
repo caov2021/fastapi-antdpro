@@ -38,21 +38,41 @@ class AuthController(BaseController[User]):
             }
         )
 
+    @Transactional(propagation=Propagation.REQUIRED)
+    async def change_password(self, username: str, old_password: str, new_password: str) -> User:
+        user = await self.user_repository.get_by_username(username)
+
+        if not user:
+            raise BadRequestException("User does not exist!")
+
+        if not PasswordHandler.verify(user.password, old_password):
+            raise BadRequestException("Old password is incorrect!")
+
+        if PasswordHandler.verify(user.password, new_password):
+            raise BadRequestException("New password can't be the same as the old one!")
+
+        user.password = PasswordHandler.hash(new_password)
+        return user
+
     async def login(self, email: EmailStr, password: str) -> Token:
         user = await self.user_repository.get_by_email(email)
 
         if not user:
-            raise BadRequestException("Invalid credentials")
+            raise BadRequestException(f"User `{email}` does not exist!")
 
         if not PasswordHandler.verify(user.password, password):
-            raise BadRequestException("Invalid credentials")
+            raise BadRequestException("User Password is incorrect, please try again!")
+
+        if not user.is_active:
+            raise BadRequestException("User is not active, please contact the administrator!")
 
         return Token(
             access_token=JWTHandler.encode(payload={"user_id": user.id}),
             refresh_token=JWTHandler.encode(payload={"sub": "refresh_token"}),
         )
 
-    async def refresh_token(self, access_token: str, refresh_token: str) -> Token:
+    @staticmethod
+    async def refresh_token(access_token: str, refresh_token: str) -> Token:
         token = JWTHandler.decode(access_token)
         refresh_token = JWTHandler.decode(refresh_token)
         if refresh_token.get("sub") != "refresh_token":

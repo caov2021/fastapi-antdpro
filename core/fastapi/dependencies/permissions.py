@@ -17,7 +17,7 @@ from core.security.access_control import (
 class InsufficientPermissionsException(CustomException):
     code = HTTPStatus.FORBIDDEN
     error_code = HTTPStatus.FORBIDDEN
-    message = "Insufficient permissions"
+    message = "Insufficient permissions!"
 
 
 async def get_user_principals(

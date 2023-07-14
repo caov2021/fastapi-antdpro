@@ -100,8 +100,8 @@ if config.ENVIRONMENT != "production":
             openapi_url=app.openapi_url,
             title=app.title + " - Swagger UI",
             oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-            swagger_js_url="/static/swagger-ui-bundle.js",
-            swagger_css_url="/static/swagger-ui.css",
+            swagger_js_url="/static/swagger/swagger-ui-bundle.js",
+            swagger_css_url="/static/swagger/swagger-ui.css",
         )
 
 
@@ -115,5 +115,5 @@ if config.ENVIRONMENT != "production":
         return get_redoc_html(
             openapi_url=app.openapi_url,
             title=app.title + " - ReDoc",
-            redoc_js_url="/static/redoc.standalone.js",
+            redoc_js_url="/static/swagger/redoc.standalone.js",
         )

@@ -26,13 +26,9 @@ class BaseController(Generic[ModelType]):
         :return: The model instance.
         """
 
-        db_obj = await self.repository.get_by(
-            field="id", value=id_, join_=join_, unique=True
-        )
+        db_obj = await self.repository.get_by(field="id", value=id_, join_=join_, unique=True)
         if not db_obj:
-            raise NotFoundException(
-                f"{self.model_class.__tablename__.title()} with id: {id} does not exist"
-            )
+            raise NotFoundException(f"{self.model_class.__tablename__.title()} with id: {id} does not exist")
 
         return db_obj
 
@@ -45,18 +41,12 @@ class BaseController(Generic[ModelType]):
         :return: The model instance.
         """
 
-        db_obj = await self.repository.get_by(
-            field="uuid", value=uuid, join_=join_, unique=True
-        )
+        db_obj = await self.repository.get_by(field="uuid", value=uuid, join_=join_, unique=True)
         if not db_obj:
-            raise NotFoundException(
-                f"{self.model_class.__tablename__.title()} with id: {uuid} does not exist"
-            )
+            raise NotFoundException(f"{self.model_class.__tablename__.title()} with id: {uuid} does not exist")
         return db_obj
 
-    async def get_all(
-        self, skip: int = 0, limit: int = 100, join_: set[str] | None = None
-    ) -> list[ModelType]:
+    async def get_all(self, skip: int = 0, limit: int = 100, join_: set[str] | None = None) -> list[ModelType]:
         """
         Returns a list of records based on pagination params.
 
@@ -81,6 +71,22 @@ class BaseController(Generic[ModelType]):
         return create
 
     @Transactional(propagation=Propagation.REQUIRED)
+    async def update_by_id(self, id_: int, attributes: dict[str, Any]) -> ModelType:
+        """
+        Updates a Object in the DB.
+        :param id_: The id of the object to update.
+        :param attributes: The attributes to create the object with.
+        :return: The updated object.
+        """
+
+        db_obj = await self.repository.get_by(field="id", value=id_, unique=True)
+        if not db_obj:
+            raise NotFoundException(f"{self.model_class.__tablename__.title()} with id: {id} does not exist")
+
+        updated = await self.repository.update_by(field="id", value=id_)
+        return updated
+
+    @Transactional(propagation=Propagation.REQUIRED)
     async def delete(self, model: ModelType) -> bool:
         """
         Deletes the Object from the DB.
@@ -89,12 +95,23 @@ class BaseController(Generic[ModelType]):
         :return: True if the object was deleted, False otherwise.
         """
         delete = await self.repository.delete(model)
-        return delete
+        return True
+
+    @Transactional(propagation=Propagation.REQUIRED)
+    async def delete_by_id(self, id_: int) -> bool:
+        """
+        Deletes the Object from the DB.
+        :param id_: The id of the object to delete.
+        :return: True if the object was deleted, False otherwise.
+        """
+        db_obj = await self.repository.get_by(field="id", value=id_, unique=True)
+        if not db_obj:
+            raise NotFoundException(f"{self.model_class.__tablename__.title()} with id: {id} does not exist")
+
+        return db_obj
 
     @staticmethod
-    async def extract_attributes_from_schema(
-        schema: BaseModel, excludes: set = None
-    ) -> dict[str, Any]:
+    async def extract_attributes_from_schema(schema: BaseModel, excludes: set = None) -> dict[str, Any]:
         """
         Extracts the attributes from the schema.
 

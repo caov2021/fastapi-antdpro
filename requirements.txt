@@ -12,7 +12,7 @@ filelock
 greenlet
 gunicorn
 poetry
-pydantic[email]
+pydantic[email]~=2.0.2
 PyJWT~=2.7.0
 pylint
 pytest~=7.4.0
@@ -27,7 +27,10 @@ uvicorn~=0.22.0
 pymysql
 aiomysql
 starlette~=0.27.0
-contextvars
-passlib
-ujson
+contextvars~=2.4
+passlib~=1.7.4
+ujson~=5.8.0
 aioredis
+bcrypt
+fastapi-pagination
+httpx

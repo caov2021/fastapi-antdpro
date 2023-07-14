@@ -30,9 +30,7 @@ class BaseRepository(Generic[ModelType]):
         self.session.add(model)
         return model
 
-    async def get_all(
-        self, skip: int = 0, limit: int = 100, join_: set[str] | None = None
-    ) -> list[ModelType]:
+    async def get_all(self, skip: int = 0, limit: int = 100, join_: set[str] | None = None) -> list[ModelType]:
         """
         Returns a list of model instances.
 
@@ -59,15 +57,38 @@ class BaseRepository(Generic[ModelType]):
         :param field: The field to match.
         :param value: The value to match.
         :param join_: The joins to make.
+        :param unique: If the field and value should only be updated if it already exists.
         :return: The model instance.
         """
         query = await self._query(join_)
         query = await self._get_by(query, field, value)
 
         if unique:
-            return await self._one(query)
+            return await self._one_or_none(query)
 
         return await self._all(query)
+
+    async def update_by(
+        self,
+        field: str,
+        value: Any,
+        attributes: dict[str, Any] = None,
+    ) -> ModelType:
+        """
+        Update the model.
+
+        :param field: The field to match.
+        :param value: The value to match.
+        :param attributes: The attributes to create the model with.
+        :return: The model instance.
+        """
+        query = await self._query()
+        query = await self._get_by(query, field, value)
+
+        res = await self._one_or_none(query)
+        res.__dict__.update(attributes or {})
+
+        return res
 
     async def delete(self, model: ModelType) -> None:
         """
@@ -76,7 +97,7 @@ class BaseRepository(Generic[ModelType]):
         :param model: The model to delete.
         :return: None
         """
-        self.session.delete(model)
+        await self.session.delete(model)
 
     async def _query(
         self,
